@@ -1,37 +1,45 @@
-from Grid import Grid
+from Battleship import *
 
-def setup_grid(grid_dict):
-    columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-    rows = list(range(10))
-
-    header = "   "+" | ".join(columns) + " |\n"
-    right_margin = "\n"
-    left_margin = [f"{number}|" for number in rows]
-    empty_cell = "   |"
-    boat = " \u25A0 |"
-    grid = header
-    body_rows = [list(grid_dict.values())[i:i+10] for i in range(0, 91, 10)]
-    body_print = []
-    for row in body_rows:
-        string = ""
-        for cell in row:
-            if cell:
-                string += boat
-            else:
-                string += empty_cell
-        body_print.append(string)
-        
-    for row in rows:
-        grid += left_margin[row] + body_print[row] + right_margin
-    
-    return grid
-
-test = Grid()
-test.add_boat("Carrier","A1","Vertical")
-test.add_boat("Battleship","J4","Vertical")
-test.add_boat("Cruiser","D4","Horizontal")
-test.add_boat("Submarine","E5","Horizontal")
-test.add_boat("Destroyer","E0","Horizontal")
+game = Play()
+game.cpu_setup()
+game.player_setup()
+print("Setting up the game")
+print("YOUR GRID")
+game.player_1.print_grid(True)
+print("CPU GRID")
+game.player_1.print_grid()
+""" player_1 = Battleship()
+player_1.add_boat("Carrier","A0","Horizontal")
+player_1.add_boat("Battleship","B0","Vertical")
+player_1.add_boat("Cruiser","D4","Horizontal")
+player_1.add_boat("Submarine","E5","Horizontal")
+player_1.add_boat("Destroyer","E7","Horizontal")
 print("             YOUR GRID:")
-print(setup_grid(test.grid))
+player_1.print_grid(True) """
+"""
+cpu = Battleship()
+cpu.add_boat("Carrier","A3","Vertical")
+cpu.add_boat("Battleship","J4","Vertical")
+cpu.add_boat("Cruiser","D4","Horizontal")
+cpu.add_boat("Submarine","E5","Horizontal")
+cpu.add_boat("Destroyer","E7","Horizontal")
+print("             CPU GRID:")
+cpu.print_grid()
+
+player_1.bomb("A3",cpu)
+player_1.bomb("A4",cpu)
+player_1.bomb("B3",cpu)
+print(print_grid(cpu.grid, False))
+player_1.bomb("B3",cpu)
+print("             CPU GRID:")
+print(print_grid(cpu.grid, False))
+print(player_1.boats)
+player_1.bomb("A1",cpu)
+player_1.bomb("A2",cpu)
+player_1.bomb("A5",cpu)
+player_1.bomb("A6",cpu)
+player_1.bomb("A7",cpu)
+print(print_grid(cpu.grid, False))
+print(player_1.sunk)
+print(cpu.boats) """
     
