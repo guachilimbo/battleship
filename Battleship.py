@@ -1,10 +1,12 @@
 import random 
 class Battleship():
+    game_end = False
     columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
     rows = list(range(10))
     letter_to_number = {key:value for key, value in zip(columns,rows)}
     def __init__(self):
         self.boats = {"Carrier":[5,], "Battleship":[4,], "Cruiser":[3,], "Submarine":[3,], "Destroyer":[2,]}
+        self.end_game = False
         self.grid = {}
         self.occupied_cells = []
         self.bombings = []
@@ -13,7 +15,7 @@ class Battleship():
             for letter in Battleship.columns:
                 self.grid[letter+str(number)] = False
     
-    def print_grid(self, show_boats = False):
+    def print_grid(self, show_boats = False, playing = False):
         columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
         rows = list(range(10))
 
@@ -29,7 +31,7 @@ class Battleship():
         for row in body_rows:
             string = ""
             for cell in row:
-                if cell and show_boats:
+                if cell is not False and cell != "miss" and cell != "hit" and show_boats is True:
                     string += boat
                 elif cell == "hit":
                     string += " x |"
@@ -44,7 +46,7 @@ class Battleship():
         print(grid)
     
     def add_boat(self, boat_name, start, direction):
-        if direction == "Horizontal":
+        if direction == "H":
             end = Battleship.letter_to_number[start[0]] + self.boats[boat_name][0]
             if end not in Battleship.rows:
                 return False
@@ -58,7 +60,7 @@ class Battleship():
                     self.occupied_cells.extend(boat_pos)
                     self.boats[boat_name].append(boat_pos)
                     return True
-        elif direction == "Vertical":
+        elif direction == "V":
             end = int(start[1]) + self.boats[boat_name][0]
             if end not in Battleship.rows:
                 return False
@@ -75,7 +77,7 @@ class Battleship():
         
     def bomb(self, cell, target_player):
         if cell in self.bombings:
-            print("Target already chosen before.")
+            return cell, "Target already chosen before."
         else:
             if target_player.grid[cell]: # Theres a boat on that grid
                 self.bombings.append(cell)
@@ -86,14 +88,15 @@ class Battleship():
                         if len(value[1]) == 0:
                             self.sunk.append(key)
                             if len(self.sunk) == 5:
-                                print("YOU WON!")
+                                print("THE GAME IS FINISHED!")
+                                Battleship.game_end = True
                     else:
                         continue
-                return True
+                return cell, "HITED!"
             else:
                 self.bombings.append(cell)
                 target_player.grid[cell] = "miss"
-                return False
+                return cell, "MISSED!"
 
 class Play:
     player_1 = Battleship()
@@ -104,8 +107,11 @@ class Play:
         for boat in Play.cpu.boats.keys():
             flag = False
             while not flag:
-                flag = Play.cpu.add_boat(boat, "".join([random.choice(Play.columns),str(random.choice(Play.rows))]), random.choice(["Horizontal", "Vertical"]))
-
+                flag = Play.cpu.add_boat(boat, self.random_cell(), random.choice(["H", "V"]))
+    
+    def random_cell(self):
+        return "".join([random.choice(Play.columns),str(random.choice(Play.rows))])
+    
     def player_setup(self):
         print("WELCOME TO BATTLESHIP")
         print("You will be playing against CPU")
@@ -115,18 +121,36 @@ class Play:
         for boat in Play.player_1.boats.keys():
             flag = False
             start_cell = input(f"Enter first coordinate (e.g. B4) for the {boat}: ")
-            direction = input(f"Enter Horizontal to place {boat} horizonally or Vertical to place {boat} Vertical: ")
+            direction = input(f"Enter H to place {boat} horizonally or V to place {boat} Vertical: ")
             while not Play.player_1.add_boat(boat, start_cell, direction):
                 print("!!! Boat does not fit. Please input different coordinate and/or direction !!!")   
                 start_cell = input(f"Enter first coordinate (e.g. B4) for the {boat}: ")
-                direction = input(f"Enter Horizontal to place {boat} horizonally or Vertical to place {boat} Vertical: ")    
+                direction = input(f"Enter H to place {boat} horizonally or V to place {boat} Vertical: ")    
             Play.player_1.print_grid(True)
 
     def play(self):
-        while len(Play.player_1.sunk) != 5 or len(Play.cpu.sunk) != 5:
-            
-        if len(Play.player_1.sunk) == 5:
-            print ("YOU WON!")
-        else:
-            print("YOU LOST!")
+        while not Play.player_1.game_end:
+            print(f"CPU boats left: {5-len(Play.player_1.sunk)}")
+            print(f"Player boats left: {5-len(Play.cpu.sunk)}")
+            cell, msg = Play.cpu.bomb(self.random_cell(), Play.player_1)
+            while msg == "Target already chosen before." or cell == None:
+                cell, msg = Play.cpu.bomb(self.random_cell(), Play.player_1)
+            print(f"CPU bombed cell {cell}")
+            print(f"It {msg}")
+
+            targ = input("Choose cell to bomb: ")
+            cell, msg = Play.player_1.bomb(targ, Play.cpu)
+            while msg == "Target already chosen before." or cell is None:
+                print(f"{msg}")
+                targ = input("Choose cell to bomb: ")
+                cell, msg = Play.player_1.bomb(targ, Play.cpu)
+            print(f"{msg}")
+
+            print("YOUR GRID")
+            Play.player_1.print_grid(show_boats = True, playing = False)
+            print("CPU GRID")
+            Play.cpu.print_grid()
+            if Play.player_1.game_end:
+                break
+
     
