@@ -1,16 +1,20 @@
 import random 
 class Battleship():
+    """ A class used to set up a battleship player. """
     game_end = False
     columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
     rows = list(range(10))
     letter_to_number = {key:value for key, value in zip(columns,rows)}
     def __init__(self):
+        """ Upon initialization, user is given 5 boats of different lengths. """
         self.boats = {"Carrier":[5,], "Battleship":[4,], "Cruiser":[3,], "Submarine":[3,], "Destroyer":[2,]}
+
         self.end_game = False
         self.grid = {}
         self.occupied_cells = []
         self.bombings = []
         self.sunk = []
+        # Create a rows x columns grid
         for number in Battleship.rows:
             for letter in Battleship.columns:
                 self.grid[letter+str(number)] = False
@@ -46,7 +50,8 @@ class Battleship():
         print(grid)
     
     def add_boat(self, boat_name, start, direction):
-        if direction == "H":
+        start = start.upper()
+        if direction.upper() == "H":
             end = Battleship.letter_to_number[start[0]] + self.boats[boat_name][0]
             if end not in Battleship.rows:
                 return False
@@ -60,7 +65,7 @@ class Battleship():
                     self.occupied_cells.extend(boat_pos)
                     self.boats[boat_name].append(boat_pos)
                     return True
-        elif direction == "V":
+        elif direction.upper() == "V":
             end = int(start[1]) + self.boats[boat_name][0]
             if end not in Battleship.rows:
                 return False
@@ -76,6 +81,7 @@ class Battleship():
                     return True
         
     def bomb(self, cell, target_player):
+        cell = cell.upper()
         if cell in self.bombings:
             return cell, "Target already chosen before."
         else:
